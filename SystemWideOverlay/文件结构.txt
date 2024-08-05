@@ -1,0 +1,21 @@
+ProjectRoot/
+│
+├── SystemWideOverlay/
+│   ├── SystemWideOverlay.h             # 主要的悬浮窗口类的头文件
+│   ├── SystemWideOverlay.m             # 主要的悬浮窗口类的实现文件
+│   ├── SystemWideOverlay+Layout.h      # 处理布局的分类头文件
+│   ├── SystemWideOverlay+Layout.m      # 处理布局的分类实现文件
+│   ├── SystemWideOverlay+MenuSetup.h   # 处理菜单设置的分类头文件
+│   └── SystemWideOverlay+MenuSetup.m   # 处理菜单设置的分类实现文件
+│
+├── JHDragView/
+│   ├── JHDragView.h                    # 可拖动视图类的头文件
+│   └── JHDragView.m                    # 可拖动视图类的实现文件
+│
+├── Utilities/
+│   ├── UIConstants.h                   # 定义全局常量的头文件
+│   ├── UIConstants.m                   # 定义全局常量的实现文件
+│   ├── LogManager.h                    # 日志管理类的头文件
+│   └── LogManager.m                    # 日志管理类的实现文件
+│
+└── Tweak.xm                            # Theos 框架使用的主要注入文件
