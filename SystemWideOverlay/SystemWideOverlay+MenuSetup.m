@@ -9,7 +9,6 @@
 
 - (void)setupMenuView {
     CGRect screenBounds = [UIScreen mainScreen].bounds;
-
     self.menuContainerView = [[UIView alloc] initWithFrame:screenBounds];
     self.menuContainerView.backgroundColor = [UIColor colorWithWhite:0.1 alpha:0.9];
     self.menuContainerView.hidden = YES;
