@@ -45,6 +45,16 @@
 
     for (UIView *pageView in self.contentView.subviews) {
         pageView.frame = self.contentView.bounds;
+
+        // 清除页面中的所有子视图
+        for (UIView *subview in pageView.subviews) {
+            [subview removeFromSuperview];
+        }
+
+        // 重新添加方形按钮
+        if ([pageView.accessibilityIdentifier isEqualToString:@"进程"]) {
+            [self addProcessContent:pageView];
+        }
     }
 }
 
