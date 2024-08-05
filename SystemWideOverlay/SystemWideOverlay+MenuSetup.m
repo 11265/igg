@@ -93,6 +93,7 @@
 - (UIView *)createPageViewWithFrame:(CGRect)frame title:(NSString *)title {
     UIView *pageView = [[UIView alloc] initWithFrame:frame];
     pageView.backgroundColor = [UIColor clearColor];
+    pageView.accessibilityIdentifier = title; // 设置访问标识符
 
     if ([title isEqualToString:@"配置"]) {
         [self addSettingsContent:pageView];
@@ -215,7 +216,6 @@
     // 将按钮添加到页面视图中
     [pageView addSubview:squareButton];
 }
-
 
 - (UIView *)createCustomAlertViewWithTitle:(NSString *)title message:(NSString *)message {
     UIView *alertView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 250, 150)];
