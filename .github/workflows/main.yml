@@ -17,14 +17,6 @@ jobs:
     - name: 检出代码
       uses: actions/checkout@v3
 
-    - name: 缓存 Theos
-      id: cache-theos
-      uses: actions/cache@v3
-      with:
-        path: ${{ env.THEOS }}
-        key: ${{ runner.os }}-theos-${{ hashFiles('**/Makefile') }}
-        restore-keys: |
-          ${{ runner.os }}-theos-
 
     - name: 配置 dpkg
       run: |
@@ -97,9 +89,3 @@ jobs:
       with:
         name: built-package
         path: packages/*.deb
-
-    - name: 部署包 (仅在 main 分支)
-      if: github.ref == 'refs/heads/main'
-      run: |
-        # 在这里添加部署包的命令
-        # 例如: scp packages/*.deb user@host:/path/to/deploy
