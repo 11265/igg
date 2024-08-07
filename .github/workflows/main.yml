@@ -19,11 +19,12 @@ jobs:
     - name: Set up Theos environment
       run: |
         brew update
-        brew install git wget ldid dpkg
+        brew install git wget ldid
         git clone --recursive https://github.com/theos/theos.git $HOME/theos
         echo 'export THEOS=$HOME/theos' >> $HOME/.zshrc
         echo 'export PATH=$THEOS/bin:$PATH' >> $HOME/.zshrc
         source $HOME/.zshrc
+        if [ -d "$THEOS/sdks" ]; then rm -rf $THEOS/sdks; fi
         git clone https://github.com/theos/sdks $THEOS/sdks
 
     - name: Build Theos script
