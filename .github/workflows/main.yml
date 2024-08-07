@@ -94,10 +94,14 @@ jobs:
           echo "构建成功"
         fi
 
-    - name: 检查 packages 目录
+    - name: 检查构建产物路径
       run: |
-        echo "packages 目录内容:"
+        echo "检查 packages 目录:"
         ls -la packages/
+        echo "检查工作区目录:"
+        ls -la ${{ github.workspace }}
+        echo "检查所有 .deb 文件:"
+        find ${{ github.workspace }} -name "*.deb"
 
     - name: 上传构建产物
       uses: actions/upload-artifact@v3
@@ -105,8 +109,8 @@ jobs:
         name: built-package
         path: |
           packages/*.deb
-          *.deb
-          **/*.deb
+          ${{ github.workspace }}/*.deb
+          ${{ github.workspace }}/**/*.deb
 
     - name: 检查上传的构建产物
       run: |
