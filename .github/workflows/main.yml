@@ -1,0 +1,33 @@
+name: Build Theos Script
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Theos environment
+      run: |
+        brew update
+        brew install git wget ldid dpkg
+        git clone --recursive https://github.com/theos/theos.git $HOME/theos
+        echo 'export THEOS=$HOME/theos' >> $HOME/.zshrc
+        echo 'export PATH=$THEOS/bin:$PATH' >> $HOME/.zshrc
+        source $HOME/.zshrc
+        git clone https://github.com/theos/sdks $THEOS/sdks
+
+    - name: Build Theos script
+      run: |
+        source $HOME/.zshrc
+        make clean
+        make
