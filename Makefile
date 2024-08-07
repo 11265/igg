@@ -5,9 +5,13 @@ TARGET := iphone:clang:latest:11.0
 
 include $(THEOS)/makefiles/common.mk
 
-igg_CFLAGS = -fobjc-arc -std=c++11
-
 TWEAK_NAME = igg
+
+# 设置 Objective-C 文件的编译标志
+igg_CFLAGS = -fobjc-arc
+
+# 设置 Objective-C++ 文件的编译标志
+igg_CXXFLAGS = -fobjc-arc -std=c++11
 
 igg_FILES = Tweak.xm \
             SystemWideOverlay/ProcessManager.m  \
