@@ -12,24 +12,24 @@
     if (@available(iOS 11.0, *)) {
         safeAreaInsets = self.safeAreaInsets;
     }
-
+    
     CGFloat width = MAX(self.desktopBounds.size.width, self.desktopBounds.size.height);
     CGFloat height = MIN(self.desktopBounds.size.width, self.desktopBounds.size.height);
-
+    
     self.frame = CGRectMake(0, 0, width, height);
     self.menuContainerView.frame = self.bounds;
-
+    
     [self updateTopBarLayout:safeAreaInsets width:width];
     [self updateContentViewLayout:safeAreaInsets width:width height:height];
     [self updateFloatingButtonLayout:safeAreaInsets width:width height:height];
-
+    
     [LogManager log:@"Layout updated"];
 }
 
 - (void)updateTopBarLayout:(UIEdgeInsets)safeAreaInsets width:(CGFloat)width {
     UIView *topBar = self.menuContainerView.subviews.firstObject;
     topBar.frame = CGRectMake(safeAreaInsets.left, safeAreaInsets.top, width - safeAreaInsets.left - safeAreaInsets.right, kTopBarHeight);
-
+    
     CGFloat buttonWidth = topBar.bounds.size.width / kTopBarButtonCount;
     for (NSInteger i = 0; i < kTopBarButtonCount; i++) {
         UIButton *button = [topBar.subviews objectAtIndex:i];
@@ -38,23 +38,13 @@
 }
 
 - (void)updateContentViewLayout:(UIEdgeInsets)safeAreaInsets width:(CGFloat)width height:(CGFloat)height {
-    self.contentView.frame = CGRectMake(safeAreaInsets.left,
-                                        safeAreaInsets.top + kTopBarHeight,
-                                        width - safeAreaInsets.left - safeAreaInsets.right,
+    self.contentView.frame = CGRectMake(safeAreaInsets.left, 
+                                        safeAreaInsets.top + kTopBarHeight, 
+                                        width - safeAreaInsets.left - safeAreaInsets.right, 
                                         height - safeAreaInsets.top - safeAreaInsets.bottom - kTopBarHeight);
-
+    
     for (UIView *pageView in self.contentView.subviews) {
         pageView.frame = self.contentView.bounds;
-
-        // 清除页面中的所有子视图
-        for (UIView *subview in pageView.subviews) {
-            [subview removeFromSuperview];
-        }
-
-        // 重新添加方形按钮
-        if ([pageView.accessibilityIdentifier isEqualToString:@"进程"]) {
-            [self addProcessContent:pageView];
-        }
     }
 }
 
@@ -62,13 +52,13 @@
     CGFloat floatingButtonSize = kFloatingButtonSize * 0.7;
     CGFloat floatingButtonX = self.initialFloatingButtonPosition.x;
     CGFloat floatingButtonY = self.initialFloatingButtonPosition.y;
-
+    
     floatingButtonX = MAX(safeAreaInsets.left, MIN(floatingButtonX, width - floatingButtonSize - safeAreaInsets.right));
     floatingButtonY = MAX(safeAreaInsets.top, MIN(floatingButtonY, height - floatingButtonSize - safeAreaInsets.bottom));
-
+    
     self.floatingButton.frame = CGRectMake(floatingButtonX, floatingButtonY, floatingButtonSize, floatingButtonSize);
     self.floatingButton.layer.cornerRadius = floatingButtonSize / 2;
-
+    
     [LogManager log:@"Floating button position updated: (%.2f, %.2f)", floatingButtonX, floatingButtonY];
 }
 
