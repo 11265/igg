@@ -17,14 +17,12 @@ jobs:
     - name: 检出代码
       uses: actions/checkout@v3
 
-
     - name: 配置 dpkg
       run: |
         sudo mkdir -p /var/lib/dpkg/info
         sudo touch /var/lib/dpkg/status
 
     - name: 设置 Theos 环境
-      if: steps.cache-theos.outputs.cache-hit != 'true'
       run: |
         brew update
         brew install ldid dpkg
@@ -55,24 +53,36 @@ jobs:
         echo "Theos 目录结构:"
         ls -R $THEOS
 
+    - name: 检查 Theos 版本
+      run: |
+        cd $THEOS
+        git rev-parse HEAD
+
     - name: 检查 Makefile
       run: |
         if [ ! -f Makefile ]; then
           echo "错误：Makefile 不存在"
           exit 1
         fi
+        echo "Makefile 内容:"
+        cat Makefile
 
     - name: 安装项目依赖
       run: |
         # 在这里添加安装其他依赖的命令
         # 例如: brew install some-package
 
+    - name: 创建 packages 目录
+      run: mkdir -p packages
 
     - name: 构建 Theos 项目
       run: |
         make clean
-        make package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless 2>&1 | tee make.log
+        make package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless DEBUG=1 VERBOSE=1 2>&1 | tee make.log
       continue-on-error: true
+
+    - name: 显示构建日志
+      run: cat make.log
 
     - name: 检查构建结果
       run: |
@@ -84,8 +94,21 @@ jobs:
           echo "构建成功"
         fi
 
+    - name: 检查 packages 目录
+      run: |
+        echo "packages 目录内容:"
+        ls -la packages/
+
     - name: 上传构建产物
       uses: actions/upload-artifact@v3
       with:
         name: built-package
-        path: packages/*.deb
+        path: |
+          packages/*.deb
+          *.deb
+          **/*.deb
+
+    - name: 检查上传的构建产物
+      run: |
+        echo "上传的构建产物:"
+        find ${{ github.workspace }} -name "*.deb"
