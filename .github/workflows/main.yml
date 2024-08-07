@@ -1,8 +1,8 @@
-name: Build Theos Project
+name: 构建 Theos 项目
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop ]  # 增加了 develop 分支
   pull_request:
     branches: [ main ]
 
@@ -14,10 +14,10 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    - name: Checkout repository
+    - name: 检出代码
       uses: actions/checkout@v3
 
-    - name: Cache Theos
+    - name: 缓存 Theos
       id: cache-theos
       uses: actions/cache@v3
       with:
@@ -26,39 +26,61 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-theos-
 
-    - name: Set up Theos environment
+    - name: 设置 Theos 环境
       if: steps.cache-theos.outputs.cache-hit != 'true'
       run: |
         brew update
-        brew install ldid
+        brew install ldid dpkg  # 添加了 dpkg
         git clone --recursive https://github.com/theos/theos.git $THEOS
         git clone https://github.com/theos/sdks $THEOS/sdks
 
-    - name: Set up environment variables
+    - name: 设置环境变量
       run: |
         echo "PATH=$THEOS/bin:$PATH" >> $GITHUB_ENV
-        echo "THEOS_DEVICE_IP=192.168.3.11" >> $GITHUB_ENV
+        echo "THEOS_DEVICE_IP=${{ secrets.DEVICE_IP }}" >> $GITHUB_ENV  # 使用 GitHub 密钥
 
-    - name: Build Theos project
+    - name: 验证 Theos 安装
+      run: |
+        $THEOS/bin/nic.pl --version
+        which ldid
+        which dpkg
+
+    - name: 安装项目依赖
+      run: |
+        # 在这里添加安装其他依赖的命令
+        # 例如: brew install some-package
+
+    - name: 运行测试
+      run: |
+        # 在这里添加运行测试的命令
+        # 例如: make test
+
+    - name: 构建 Theos 项目
       run: |
         make clean
         make package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless 2>&1 | tee make.log
 
-    - name: Upload artifact
+    - name: 上传构建产物
       uses: actions/upload-artifact@v3
       with:
         name: built-package
         path: packages/*.deb
 
-    - name: Display build logs on failure
+    - name: 显示构建失败日志
       if: failure()
       run: |
-        echo "Build failed. Displaying last 100 lines of make.log:"
-        tail -n 100 make.log || echo "make.log not found or empty"
+        echo "构建失败。显示 make.log 的最后 100 行:"
+        tail -n 100 make.log || echo "未找到 make.log 或文件为空"
 
-    - name: Upload build log
+    - name: 上传构建日志
       if: always()
       uses: actions/upload-artifact@v3
       with:
         name: build-log
         path: make.log
+
+    - name: 部署包 (仅在 main 分支)
+      if: github.ref == 'refs/heads/main'
+      run: |
+        # 在这里添加部署包的命令
+        # 例如: scp packages/*.deb user@host:/path/to/deploy
