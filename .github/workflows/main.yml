@@ -75,10 +75,6 @@ jobs:
         # 在这里添加安装其他依赖的命令
         # 例如: brew install some-package
 
-    - name: 运行测试
-      run: |
-        # 在这里添加运行测试的命令
-        # 例如: make test
 
     - name: 构建 Theos 项目
       run: |
@@ -101,19 +97,6 @@ jobs:
       with:
         name: built-package
         path: packages/*.deb
-
-    - name: 显示构建失败日志
-      if: failure()
-      run: |
-        echo "构建失败。显示 make.log 的最后 100 行:"
-        tail -n 100 make.log || echo "未找到 make.log 或文件为空"
-
-    - name: 上传构建日志
-      if: always()
-      uses: actions/upload-artifact@v3
-      with:
-        name: build-log
-        path: make.log
 
     - name: 部署包 (仅在 main 分支)
       if: github.ref == 'refs/heads/main'
