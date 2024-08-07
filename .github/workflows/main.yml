@@ -18,6 +18,7 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Cache Theos
+      id: cache-theos
       uses: actions/cache@v3
       with:
         path: ${{ env.THEOS }}
@@ -41,7 +42,7 @@ jobs:
     - name: Build Theos project
       run: |
         make clean
-        make package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
+        make package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless 2>&1 | tee make.log
 
     - name: Upload artifact
       uses: actions/upload-artifact@v3
@@ -53,4 +54,11 @@ jobs:
       if: failure()
       run: |
         echo "Build failed. Displaying last 100 lines of make.log:"
-        tail -n 100 make.log
+        tail -n 100 make.log || echo "make.log not found or empty"
+
+    - name: Upload build log
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-log
+        path: make.log
