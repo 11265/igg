@@ -30,5 +30,6 @@ jobs:
     - name: Build Theos script
       run: |
         source $HOME/.zshrc
+        export THEOS_DEVICE_IP=192.168.3.11
         make clean
         make
