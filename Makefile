@@ -5,8 +5,8 @@ TARGET := iphone:clang:latest:11.0
 
 include $(THEOS)/makefiles/common.mk
 
-export CFLAGS += -std=c11
-export CXXFLAGS += -std=c++11
+igg_CFLAGS = -fobjc-arc -std=c++11
+
 TWEAK_NAME = igg
 
 igg_FILES = Tweak.xm \
