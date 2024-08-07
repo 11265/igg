@@ -1,12 +1,13 @@
-name: Build Theos Script
+name: Build Theos Project
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
+
+env:
+  THEOS: ${{ github.workspace }}/theos
 
 jobs:
   build:
@@ -14,22 +15,42 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
+
+    - name: Cache Theos
+      uses: actions/cache@v3
+      with:
+        path: ${{ env.THEOS }}
+        key: ${{ runner.os }}-theos-${{ hashFiles('**/Makefile') }}
+        restore-keys: |
+          ${{ runner.os }}-theos-
 
     - name: Set up Theos environment
+      if: steps.cache-theos.outputs.cache-hit != 'true'
       run: |
         brew update
-        brew install git wget ldid
-        git clone --recursive https://github.com/theos/theos.git $HOME/theos
-        echo 'export THEOS=$HOME/theos' >> $HOME/.zshrc
-        echo 'export PATH=$THEOS/bin:$PATH' >> $HOME/.zshrc
-        source $HOME/.zshrc
-        if [ -d "$THEOS/sdks" ]; then rm -rf $THEOS/sdks; fi
+        brew install ldid
+        git clone --recursive https://github.com/theos/theos.git $THEOS
         git clone https://github.com/theos/sdks $THEOS/sdks
 
-    - name: Build Theos script
+    - name: Set up environment variables
       run: |
-        source $HOME/.zshrc
-        export THEOS_DEVICE_IP=192.168.3.11
+        echo "PATH=$THEOS/bin:$PATH" >> $GITHUB_ENV
+        echo "THEOS_DEVICE_IP=192.168.3.11" >> $GITHUB_ENV
+
+    - name: Build Theos project
+      run: |
         make clean
-        make
+        make package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: built-package
+        path: packages/*.deb
+
+    - name: Display build logs on failure
+      if: failure()
+      run: |
+        echo "Build failed. Displaying last 100 lines of make.log:"
+        tail -n 100 make.log
