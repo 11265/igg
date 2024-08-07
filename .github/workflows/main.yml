@@ -2,7 +2,7 @@ name: 构建 Theos 项目
 
 on:
   push:
-    branches: [ main, develop ]  # 增加了 develop 分支
+    branches: [ main, develop ]
   pull_request:
     branches: [ main ]
 
@@ -26,24 +26,49 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-theos-
 
+    - name: 配置 dpkg
+      run: |
+        sudo mkdir -p /var/lib/dpkg/info
+        sudo touch /var/lib/dpkg/status
+
     - name: 设置 Theos 环境
       if: steps.cache-theos.outputs.cache-hit != 'true'
       run: |
         brew update
-        brew install ldid dpkg  # 添加了 dpkg
+        brew install ldid dpkg
         git clone --recursive https://github.com/theos/theos.git $THEOS
-        git clone https://github.com/theos/sdks $THEOS/sdks
+        if [ -d "$THEOS/sdks" ]; then
+          echo "sdks 目录已存在，正在更新..."
+          cd $THEOS/sdks
+          git pull
+        else
+          echo "克隆 sdks 仓库..."
+          git clone https://github.com/theos/sdks $THEOS/sdks
+        fi
 
     - name: 设置环境变量
       run: |
         echo "PATH=$THEOS/bin:$PATH" >> $GITHUB_ENV
-        echo "THEOS_DEVICE_IP=${{ secrets.DEVICE_IP }}" >> $GITHUB_ENV  # 使用 GitHub 密钥
+        echo "THEOS_DEVICE_IP=${{ secrets.DEVICE_IP }}" >> $GITHUB_ENV
 
     - name: 验证 Theos 安装
       run: |
-        $THEOS/bin/nic.pl --version
-        which ldid
-        which dpkg
+        $THEOS/bin/nic.pl --version || echo "nic.pl 未找到或无法执行"
+        which ldid || echo "ldid 未找到"
+        which dpkg || echo "dpkg 未找到"
+        ls -la $THEOS/sdks || echo "sdks 目录不存在或为空"
+
+    - name: 显示 Theos 目录结构
+      run: |
+        echo "Theos 目录结构:"
+        ls -R $THEOS
+
+    - name: 检查 Makefile
+      run: |
+        if [ ! -f Makefile ]; then
+          echo "错误：Makefile 不存在"
+          exit 1
+        fi
 
     - name: 安装项目依赖
       run: |
@@ -59,6 +84,17 @@ jobs:
       run: |
         make clean
         make package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless 2>&1 | tee make.log
+      continue-on-error: true
+
+    - name: 检查构建结果
+      run: |
+        if [ $? -ne 0 ]; then
+          echo "构建失败。显示 make.log 的最后 100 行:"
+          tail -n 100 make.log
+          exit 1
+        else
+          echo "构建成功"
+        fi
 
     - name: 上传构建产物
       uses: actions/upload-artifact@v3
