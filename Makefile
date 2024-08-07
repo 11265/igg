@@ -4,7 +4,8 @@ THEOS_PACKAGE_SCHEME = rootless
 TARGET := iphone:clang:latest:11.0
 
 include $(THEOS)/makefiles/common.mk
-
+# 添加以下行以启用 C++11 支持
+export CXXFLAGS += -std=c++11
 TWEAK_NAME = igg
 
 igg_FILES = Tweak.xm \
